@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:c="http://www.springframework.org/schema/c"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xsi:schemaLocation="
+	       http://www.springframework.org/schema/beans
+	       http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+	       http://www.springframework.org/schema/context
+	       http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+
+    <context:property-placeholder location="classpath:prop/gateway.properties"/>
+
+    <bean id="gatewayConfig" class="org.apache.rocketmq.gateway.common.GatewayConfig"
+          p:listenPort="${listenPort}"
+          p:gatewayAddress="${gatewayAddress}"
+          p:selectorThreads="${selectorThreads}"
+          p:workerThreads="${workerThreads}"
+          p:sendThreadPoolQueueCapacity="${sendThreadPoolQueueCapacity}"
+          p:channelMaxIdleTimeSeconds="${channelMaxIdleTimeSeconds}"
+          p:httpTransferMaxContentLength="${httpTransferMaxContentLength}"
+          p:nameServerAddress="${nameServerAddress}"
+          p:producerIdleCheckIntervalSeconds="${producerIdleCheckIntervalSeconds}"
+          p:producerMaxIdleTimeSeconds="${producerMaxIdleTimeSeconds}"
+    />
+
+    <!-- 生产 -->
+    <bean id="producerManager" class="org.apache.rocketmq.gateway.processor.producer.ProducerManager"
+          init-method="start" destroy-method="stop"
+          p:gatewayConfig-ref="gatewayConfig"
+    />
+
+    <bean id="produceMessageProcessor" class="org.apache.rocketmq.gateway.processor.producer.ProduceMessageProcessor"
+          p:producerManager-ref="producerManager"/>
+
+    <bean id="gatewayServer" class="com.alibaba.rocketmq.gateway.transport.netty.NettyGatewayServer"
+          init-method="start" destroy-method="stop"
+          c:gatewayConfig-ref="gatewayConfig"
+          p:processor-ref="produceMessageProcessor"
+    />
+
+    <!-- 消费 -->
+    <bean id="consumerManager" class="org.apache.rocketmq.gateway.processor.consumer.ConsumerManager"
+          destroy-method="stop"
+          c:_0-ref="gatewayConfig"
+          c:_1-ref="httpClient"
+    />
+
+    <!-- 生产/消息变更订阅关系监听器 -->
+    <bean id="subscriptionChangeWatcher" class="org.apache.rocketmq.gateway.processor.SubscriptionChangeWatcher"
+          init-method="init"
+          c:producerManager-ref="producerManager"
+          c:consumerManager-ref="consumerManager"/>
+
+    <bean id="httpClients" class="org.apache.rocketmq.gateway.common.utils.HttpClients"
+          destroy-method="close"
+          p:connectionRequestTimeout="${http.connectionRequestTimeout}"
+          p:connectTimeout="${http.connectionTimeout}"
+          p:socketTimeout="${http.socketTimeout}"
+          p:maxIdleTime="${http.maxIdleTime}"
+          p:idleInterval="${http.idleInterval}"
+          p:defaultMaxPerRoute="${http.defaultMaxPerRoute}"
+          p:maxTotal="${http.maxTotal}"
+          p:redirect="${http.redirect}"
+          p:retryCount="${http.retryCount}">
+    </bean>
+
+    <bean id="httpClient" factory-bean="httpClients" factory-method="create"/>
+
+</beans>
