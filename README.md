@@ -20,27 +20,27 @@ http方式生产消息、消费消息（推模式，http回调）
 
 ## server
 
-### 下载源代码，编译打包
+1. 下载源代码，编译打包
 ```
 mvn clean package -Dmaven.test.skip=true
 ```
 
-### 配置rocketmq nameserver
+2. 配置rocketmq nameserver
 ```
 nameServerAddress=IP:PORT
 ```
 
-### 启动server Lancher
+3. 启动server Lancher
 
 
 ## client端
 
-### 消息生产
+1. 消息生产
 ```
 curl -H "App:gateway_demo"  -H "Topic: test" -H "Request-ID: 1111" -H "Content-Type: application/json"  -d '{"key":"123", "body":{"test":"test"}}'  http://localhost:8081/gateway
 ```
 
-### 消息消费
+2. 消息消费
 
 ```
 SubscriptionChangeWatcher
