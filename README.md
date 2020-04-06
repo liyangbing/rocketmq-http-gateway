@@ -33,7 +33,7 @@ nameServerAddress=IP:PORT
 3. 启动server Lancher
 
 
-## client端
+## client
 
 1. 消息生产
 ```
