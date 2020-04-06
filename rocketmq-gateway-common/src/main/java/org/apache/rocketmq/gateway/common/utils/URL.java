@@ -1,13 +1,12 @@
 package org.apache.rocketmq.gateway.common.utils;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.net.InetSocketAddress;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 public final class URL implements Serializable {
 
@@ -72,35 +71,6 @@ public final class URL implements Serializable {
             parameters = new HashMap<String, String>(parameters);
         }
         this.parameters = Collections.unmodifiableMap(parameters);
-    }
-
-    public static String encodeURL(String urlString) throws UnsupportedEncodingException {
-        URL url = valueOf(urlString);
-        if (StringUtils.isBlank(url.getAbsolutePath())) {
-            return "";
-        }
-        StringBuilder builder = new StringBuilder(url.getAbsolutePath());
-
-        Map<String, String> params = url.getParameters();
-        if (params != null && !params.isEmpty()) {
-            int index = 0;
-            String key, value;
-            for (Map.Entry<String, String> parameter : params.entrySet()) {
-                key = URLEncoder.encode(parameter.getKey(), "UTF-8");
-                value = URLEncoder.encode(parameter.getValue(), "UTF-8");
-
-                if (index == 0) {
-                    builder.append("?");
-                }
-                if (index > 0) {
-                    builder.append("&");
-                }
-                builder.append(key).append("=").append(value);
-                index++;
-            }
-        }
-
-        return builder.toString();
     }
 
     /**
@@ -248,7 +218,9 @@ public final class URL implements Serializable {
         return new URL(protocol, username, password, host, port, path, getParameters());
     }
 
-
+    public String getAddress() {
+        return this.port <= 0 ? this.host : this.host + ":" + this.port;
+    }
 
     public String getHost() {
         return host;
@@ -297,7 +269,6 @@ public final class URL implements Serializable {
         }
         return value;
     }
-
 
 
     public int hashCode() {

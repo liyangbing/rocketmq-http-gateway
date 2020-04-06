@@ -82,6 +82,7 @@ public final class NettyGatewayServer extends Service {
                                 new HttpObjectAggregator(gatewayConfig.getHttpTransferMaxContentLength()),
                                 new RequestDecoder(NettyGatewayServer.this.gatewayConfig.getGatewayAddress()),
                                 new ResponseEncoder(),
+                                new GatewayLoggingHandler(),
                                 new RequestValidator(),
                                 new NettyServerHandler()
                         );
